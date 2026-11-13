@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## NernstLab structure
+- Keep electrochemical formulas and preset data in a pure client-safe utility module with adjacent unit tests, and keep each shareable screen in a TanStack file route; this keeps scientific logic inspectable and every page independently navigable.
