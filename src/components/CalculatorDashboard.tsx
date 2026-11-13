@@ -38,6 +38,7 @@ import {
   buildPresetInput,
   calculateCell,
   CELL_PRESETS,
+  getCellPreset,
   STANDARD_TEMPERATURE_K,
   validateCellInput,
   type CellInput,
@@ -48,8 +49,9 @@ type CellState = CellInput & { presetId: string; custom: boolean };
 type ChartPoint = { x: number; potential: number };
 
 function initialCell(): CellState {
-  const input = buildPresetInput(CELL_PRESETS[0]);
-  return { ...input, presetId: CELL_PRESETS[0].id, custom: false };
+  const preset = getCellPreset("daniell");
+  const input = buildPresetInput(preset);
+  return { ...input, presetId: preset.id, custom: false };
 }
 
 function formatNumber(value: number, significant = 4): string {
@@ -80,6 +82,7 @@ function interpolateHeatColor(value: number, minimum: number, maximum: number): 
   const local = segment === 0 ? ratio * 2 : (ratio - 0.5) * 2;
   const left = colorStops[segment];
   const right = colorStops[segment + 1];
+  if (!left || !right) return "var(--color-primary)";
   return `color-mix(in oklab, ${left.color} ${Math.round((1 - local) * 100)}%, ${right.color})`;
 }
 
@@ -88,7 +91,7 @@ export function CalculatorDashboard() {
   const [temperatureUnit, setTemperatureUnit] = useState<"C" | "K">("C");
   const [showWorking, setShowWorking] = useState(true);
   const [hasCalculated, setHasCalculated] = useState(false);
-  const preset = CELL_PRESETS.find((entry) => entry.id === cell.presetId) ?? CELL_PRESETS[0];
+  const preset = getCellPreset(cell.custom ? "daniell" : cell.presetId);
   const currentInput: CellInput = cell;
   const errors = validateCellInput(currentInput);
   const result = Object.keys(errors).length === 0 ? calculateCell(currentInput) : null;
@@ -147,8 +150,7 @@ export function CalculatorDashboard() {
   }
 
   function applyPreset(id: string) {
-    const selected = CELL_PRESETS.find((entry) => entry.id === id);
-    if (!selected) return;
+    const selected = getCellPreset(id);
     setCell((previous) => ({
       ...buildPresetInput(selected, previous.anodeConcentration, previous.cathodeConcentration, previous.temperatureK),
       presetId: selected.id,
@@ -157,7 +159,7 @@ export function CalculatorDashboard() {
   }
 
   function tryExample() {
-    const selected = CELL_PRESETS[0];
+    const selected = getCellPreset("daniell");
     setCell({ ...buildPresetInput(selected, 0.01, 1), presetId: selected.id, custom: false });
     setTemperatureUnit("K");
     setHasCalculated(true);
@@ -264,15 +266,15 @@ export function CalculatorDashboard() {
 
           <section className="space-y-4 border-b border-border pb-6" aria-labelledby="potential-heading">
             <h3 id="potential-heading" className="text-base font-semibold">Standard potentials</h3>
-            <NumberField label="Anode E°" unit="V" id="anode-potential" value={cell.anodePotential} error={errors.anodePotential} onChange={(value) => { chooseCustom(); update("anodePotential", parseNumeric(value)); }} />
-            <NumberField label="Cathode E°" unit="V" id="cathode-potential" value={cell.cathodePotential} error={errors.cathodePotential} onChange={(value) => { chooseCustom(); update("cathodePotential", parseNumeric(value)); }} />
+            <NumberField label="Anode E°" unit="V" id="anode-potential" value={cell.anodePotential} error={errors["anodePotential"]} onChange={(value) => { chooseCustom(); update("anodePotential", parseNumeric(value)); }} />
+            <NumberField label="Cathode E°" unit="V" id="cathode-potential" value={cell.cathodePotential} error={errors["cathodePotential"]} onChange={(value) => { chooseCustom(); update("cathodePotential", parseNumeric(value)); }} />
             {cell.cathodePotential < cell.anodePotential && <Alert className="border-voltage/50 text-foreground"><Info className="size-4" /><AlertTitle>Non-spontaneous setup</AlertTitle><AlertDescription>The cathode E° is lower than the anode E°. The standard cell potential is negative.</AlertDescription></Alert>}
           </section>
 
           <section className="space-y-4 border-b border-border pb-6" aria-labelledby="concentration-heading">
             <h3 id="concentration-heading" className="text-base font-semibold">Ion concentrations</h3>
-            <NumberField label={`${anodeIon} at the anode`} unit="M" id="anode-concentration" value={cell.anodeConcentration} error={errors.anodeConcentration} onChange={(value) => update("anodeConcentration", parseNumeric(value))} />
-            <NumberField label={`${cathodeIon} at the cathode`} unit="M" id="cathode-concentration" value={cell.cathodeConcentration} error={errors.cathodeConcentration} onChange={(value) => update("cathodeConcentration", parseNumeric(value))} />
+            <NumberField label={`${anodeIon} at the anode`} unit="M" id="anode-concentration" value={cell.anodeConcentration} error={errors["anodeConcentration"]} onChange={(value) => update("anodeConcentration", parseNumeric(value))} />
+            <NumberField label={`${cathodeIon} at the cathode`} unit="M" id="cathode-concentration" value={cell.cathodeConcentration} error={errors["cathodeConcentration"]} onChange={(value) => update("cathodeConcentration", parseNumeric(value))} />
             <SliderControl label="Adjust anode concentration" value={cell.anodeConcentration} display={formatNumber(cell.anodeConcentration, 3)} min={-3} max={1} step={0.01} minCaption="0.001 M" maxCaption="10 M" onValueChange={(value) => update("anodeConcentration", 10 ** value)} logarithmic />
           </section>
 
@@ -290,7 +292,7 @@ export function CalculatorDashboard() {
               {errors.temperature && <p className="mt-1 text-sm text-destructive" role="alert">{errors.temperature}</p>}
             </div>
             <SliderControl label="Adjust temperature" value={cell.temperatureK} display={`${formatNumber(cell.temperatureK, 4)} K`} min={273} max={373} step={0.1} minCaption="273 K" maxCaption="373 K" onValueChange={(value) => update("temperatureK", value)} />
-            <NumberField label="Electrons transferred (n)" unit="e⁻" id="electrons" value={cell.electrons} error={errors.electrons} step="1" onChange={(value) => update("electrons", parseNumeric(value))} />
+            <NumberField label="Electrons transferred (n)" unit="e⁻" id="electrons" value={cell.electrons} error={errors["electrons"]} step="1" onChange={(value) => update("electrons", parseNumeric(value))} />
           </section>
 
           <Button className="h-11 w-full" onClick={() => setHasCalculated(true)} disabled={Object.keys(errors).length > 0} type="button">

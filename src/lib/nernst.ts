@@ -26,6 +26,12 @@ export const CELL_PRESETS: CellPreset[] = [
   { id: "al-cu", name: "Aluminum–copper", notation: "Al | Al³⁺ || Cu²⁺ | Cu", anode: "Al³⁺", cathode: "Cu²⁺", anodePotential: -1.66, cathodePotential: 0.34, anodeCharge: 3, cathodeCharge: 2, electrons: 6 },
 ];
 
+export function getCellPreset(id: string): CellPreset {
+  const preset = CELL_PRESETS.find((entry) => entry.id === id);
+  if (!preset) throw new Error(`Unknown electrochemical cell preset: ${id}`);
+  return preset;
+}
+
 export type CellInput = {
   anodePotential: number;
   cathodePotential: number;
@@ -80,12 +86,12 @@ export function calculateCell(input: CellInput): CellResult {
 
 export function validateCellInput(input: CellInput): Record<string, string> {
   const errors: Record<string, string> = {};
-  if (!Number.isFinite(input.anodePotential)) errors.anodePotential = "Enter a valid anode potential.";
-  if (!Number.isFinite(input.cathodePotential)) errors.cathodePotential = "Enter a valid cathode potential.";
-  if (!(input.anodeConcentration > 0)) errors.anodeConcentration = "Concentration must be greater than 0 M.";
-  if (!(input.cathodeConcentration > 0)) errors.cathodeConcentration = "Concentration must be greater than 0 M.";
-  if (!(Number.isInteger(input.electrons) && input.electrons > 0)) errors.electrons = "n must be a positive integer.";
-  if (!(input.temperatureK > 0)) errors.temperature = "Temperature must be above absolute zero.";
+  if (!Number.isFinite(input.anodePotential)) errors["anodePotential"] = "Enter a valid anode potential.";
+  if (!Number.isFinite(input.cathodePotential)) errors["cathodePotential"] = "Enter a valid cathode potential.";
+  if (!(input.anodeConcentration > 0)) errors["anodeConcentration"] = "Concentration must be greater than 0 M.";
+  if (!(input.cathodeConcentration > 0)) errors["cathodeConcentration"] = "Concentration must be greater than 0 M.";
+  if (!(Number.isInteger(input.electrons) && input.electrons > 0)) errors["electrons"] = "n must be a positive integer.";
+  if (!(input.temperatureK > 0)) errors["temperature"] = "Temperature must be above absolute zero.";
   return errors;
 }
 
