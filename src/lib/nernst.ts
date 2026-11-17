@@ -18,7 +18,7 @@ export type CellPreset = {
 
 export const CELL_PRESETS: CellPreset[] = [
   { id: "daniell", name: "Daniell cell", notation: "Zn | Zn²⁺ || Cu²⁺ | Cu", anode: "Zn²⁺", cathode: "Cu²⁺", anodePotential: -0.76, cathodePotential: 0.34, anodeCharge: 2, cathodeCharge: 2, electrons: 2 },
-  { id: "cu-ag", name: "Copper–silver", notation: "Cu | Cu²⁺ || Ag⁺ | Ag", anode: "Cu²⁺", cathode: "Ag⁺", anodePotential: 0.34, cathodePotential: 0.80, anodeCharge: 2, cathodeCharge: 1, electrons: 1 },
+  { id: "cu-ag", name: "Copper–silver", notation: "Cu | Cu²⁺ || Ag⁺ | Ag", anode: "Cu²⁺", cathode: "Ag⁺", anodePotential: 0.34, cathodePotential: 0.80, anodeCharge: 2, cathodeCharge: 1, electrons: 2 },
   { id: "zn-ag", name: "Zinc–silver", notation: "Zn | Zn²⁺ || Ag⁺ | Ag", anode: "Zn²⁺", cathode: "Ag⁺", anodePotential: -0.76, cathodePotential: 0.80, anodeCharge: 2, cathodeCharge: 1, electrons: 2 },
   { id: "fe-cu", name: "Iron–copper", notation: "Fe | Fe²⁺ || Cu²⁺ | Cu", anode: "Fe²⁺", cathode: "Cu²⁺", anodePotential: -0.44, cathodePotential: 0.34, anodeCharge: 2, cathodeCharge: 2, electrons: 2 },
   { id: "mg-cu", name: "Magnesium–copper", notation: "Mg | Mg²⁺ || Cu²⁺ | Cu", anode: "Mg²⁺", cathode: "Cu²⁺", anodePotential: -2.37, cathodePotential: 0.34, anodeCharge: 2, cathodeCharge: 2, electrons: 2 },
@@ -88,10 +88,12 @@ export function validateCellInput(input: CellInput): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!Number.isFinite(input.anodePotential)) errors["anodePotential"] = "Enter a valid anode potential.";
   if (!Number.isFinite(input.cathodePotential)) errors["cathodePotential"] = "Enter a valid cathode potential.";
-  if (!(input.anodeConcentration > 0)) errors["anodeConcentration"] = "Concentration must be greater than 0 M.";
-  if (!(input.cathodeConcentration > 0)) errors["cathodeConcentration"] = "Concentration must be greater than 0 M.";
+  if (!(Number.isFinite(input.anodeConcentration) && input.anodeConcentration > 0)) errors["anodeConcentration"] = "Concentration must be a finite value greater than 0 M.";
+  if (!(Number.isFinite(input.cathodeConcentration) && input.cathodeConcentration > 0)) errors["cathodeConcentration"] = "Concentration must be a finite value greater than 0 M.";
   if (!(Number.isInteger(input.electrons) && input.electrons > 0)) errors["electrons"] = "n must be a positive integer.";
-  if (!(input.temperatureK > 0)) errors["temperature"] = "Temperature must be above absolute zero.";
+  if (!(Number.isFinite(input.temperatureK) && input.temperatureK > 0)) errors["temperature"] = "Temperature must be a finite value above absolute zero.";
+  if (input.anodeCharge !== undefined && !(Number.isInteger(input.anodeCharge) && input.anodeCharge > 0)) errors["anodeCharge"] = "Anode ion charge must be a positive integer.";
+  if (input.cathodeCharge !== undefined && !(Number.isInteger(input.cathodeCharge) && input.cathodeCharge > 0)) errors["cathodeCharge"] = "Cathode ion charge must be a positive integer.";
   return errors;
 }
 

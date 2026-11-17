@@ -81,14 +81,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "NernstLab | Electrochemistry Tools" },
+      { name: "description", content: "Nernst equation tools for electrochemical cell calculations and analysis." },
+      { name: "author", content: "NernstLab" },
+      { property: "og:title", content: "NernstLab | Electrochemistry Tools" },
+      { property: "og:description", content: "Calculate and analyze electrochemical cell potential with NernstLab." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {

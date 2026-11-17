@@ -4,7 +4,7 @@ import { Atom, BookOpenText, FlaskConical, Info, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button";
 
 const navigation = [
-  { to: "/calculator" as const, label: "Calculator", icon: FlaskConical },
+  { to: "/" as const, label: "Calculator", icon: FlaskConical },
   { to: "/learn" as const, label: "Learn", icon: BookOpenText },
   { to: "/about" as const, label: "About", icon: Info },
 ];
@@ -42,7 +42,7 @@ export function NernstShell({ children }: { children: React.ReactNode }) {
               <Button
                 key={to}
                 asChild
-                variant={pathname === to ? "secondary" : "ghost"}
+                variant={pathname === to || (to === "/" && pathname === "/calculator") ? "secondary" : "ghost"}
                 size="sm"
                 className="px-2 sm:px-3"
               >
