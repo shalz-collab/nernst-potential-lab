@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import {
   CartesianGrid,
-  Cell,
   ComposedChart,
   Line,
   LineChart,
@@ -39,14 +38,11 @@ import {
   calculateCell,
   CELL_PRESETS,
   getCellPreset,
-  STANDARD_TEMPERATURE_K,
   validateCellInput,
   type CellInput,
-  type CellPreset,
 } from "@/lib/nernst";
 
 type CellState = CellInput & { presetId: string; custom: boolean };
-type ChartPoint = { x: number; potential: number };
 
 function initialCell(): CellState {
   const preset = getCellPreset("daniell");
@@ -142,7 +138,7 @@ export function CalculatorDashboard() {
 
   const minHeat = Math.min(...heatValues.map((point) => point.potential));
   const maxHeat = Math.max(...heatValues.map((point) => point.potential));
-  const chartColor = "hsl(var(--chart-1))";
+  const chartColor = "var(--color-chart-1)";
   const currentConcentration = cell.anodeConcentration;
 
   function update<K extends keyof CellState>(key: K, value: CellState[K]) {
@@ -286,10 +282,10 @@ export function CalculatorDashboard() {
                 <div className="flex items-center gap-2 text-sm"><span className={temperatureUnit === "C" ? "font-semibold text-foreground" : "text-muted-foreground"}>°C</span><Switch checked={temperatureUnit === "K"} onCheckedChange={(checked) => handleTemperatureUnit(checked ? "K" : "C")} aria-label="Temperature unit: Celsius or Kelvin" /><span className={temperatureUnit === "K" ? "font-semibold text-foreground" : "text-muted-foreground"}>K</span></div>
               </div>
               <div className="flex gap-2">
-                <Input id="temperature" type="number" step="any" value={formatInput(temperatureShown)} aria-label={`Temperature in ${temperatureUnit === "C" ? "degrees Celsius" : "kelvin"}`} aria-invalid={Boolean(errors.temperature)} onChange={(event) => handleTemperature(parseNumeric(event.target.value))} />
+                <Input id="temperature" type="number" step="any" value={formatInput(temperatureShown)} aria-label={`Temperature in ${temperatureUnit === "C" ? "degrees Celsius" : "kelvin"}`} aria-invalid={Boolean(errors["temperature"])} onChange={(event) => handleTemperature(parseNumeric(event.target.value))} />
                 <span className="flex h-9 min-w-12 items-center justify-center rounded-md border border-border bg-muted/40 px-3 font-mono text-sm text-muted-foreground">{temperatureUnit === "C" ? "°C" : "K"}</span>
               </div>
-              {errors.temperature && <p className="mt-1 text-sm text-destructive" role="alert">{errors.temperature}</p>}
+              {errors["temperature"] && <p className="mt-1 text-sm text-destructive" role="alert">{errors["temperature"]}</p>}
             </div>
             <SliderControl label="Adjust temperature" value={cell.temperatureK} display={`${formatNumber(cell.temperatureK, 4)} K`} min={273} max={373} step={0.1} minCaption="273 K" maxCaption="373 K" onValueChange={(value) => update("temperatureK", value)} />
             <NumberField label="Electrons transferred (n)" unit="e⁻" id="electrons" value={cell.electrons} error={errors["electrons"]} step="1" onChange={(value) => update("electrons", parseNumeric(value))} />
@@ -408,7 +404,7 @@ function formatInput(value: number): string {
   return Number.isFinite(value) ? String(Number(value.toPrecision(8))) : "";
 }
 
-function NumberField({ label, unit, id, value, error, step = "any", onChange }: { label: string; unit: string; id: string; value: number; error?: string; step?: string; onChange: (value: string) => void }) {
+function NumberField({ label, unit, id, value, error, step = "any", onChange }: { label: string; unit: string; id: string; value: number; error?: string | undefined; step?: string; onChange: (value: string) => void }) {
   return <div>
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
     <div className="mt-2 flex gap-2">
@@ -420,7 +416,10 @@ function NumberField({ label, unit, id, value, error, step = "any", onChange }: 
 }
 
 function SliderControl({ label, value, display, min, max, step, minCaption, maxCaption, onValueChange, logarithmic = false }: { label: string; value: number; display: string; min: number; max: number; step: number; minCaption: string; maxCaption: string; onValueChange: (value: number) => void; logarithmic?: boolean }) {
-  const sliderValue = logarithmic ? Math.log10(value) : value;
+  const rawSliderValue = logarithmic
+    ? Number.isFinite(value) && value > 0 ? Math.log10(value) : min
+    : Number.isFinite(value) ? value : min;
+  const sliderValue = Math.min(max, Math.max(min, rawSliderValue));
   return <div className="rounded-md bg-muted/35 px-3 py-3">
     <div className="mb-3 flex items-center justify-between gap-3"><Label className="text-sm">{label}</Label><span className="font-mono text-sm font-semibold tabular-nums">{display}</span></div>
     <Slider aria-label={label} value={[sliderValue]} min={min} max={max} step={step} onValueChange={(values) => { const next = values[0]; if (next !== undefined) onValueChange(logarithmic ? 10 ** next : next); }} />

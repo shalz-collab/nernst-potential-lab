@@ -33,10 +33,10 @@ describe("Nernst cell calculations", () => {
       temperatureK: 0,
       electrons: 1.5,
     });
-    expect(errors["anodeConcentration"]).toBe("Concentration must be greater than 0 M.");
-    expect(errors["cathodeConcentration"]).toBe("Concentration must be greater than 0 M.");
+    expect(errors["anodeConcentration"]).toBe("Concentration must be a finite value greater than 0 M.");
+    expect(errors["cathodeConcentration"]).toBe("Concentration must be a finite value greater than 0 M.");
     expect(errors["electrons"]).toBe("n must be a positive integer.");
-    expect(errors["temperature"]).toBe("Temperature must be above absolute zero.");
+    expect(errors["temperature"]).toBe("Temperature must be a finite value above absolute zero.");
   });
 
   it("rejects infinite concentrations and temperatures", () => {
