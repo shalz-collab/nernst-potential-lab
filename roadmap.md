@@ -6,5 +6,5 @@
 - [x] Apply a restrained professional visual system without glow effects.
 - [ ] Verify app routes, the Daniell example, tests, and preview build.
 - [ ] Add an AI Gateway explanation grounded in the active cell setup and calculation.
-- [ ] Save user cell calculations and provide a side-by-side comparison history.
+- [ ] Save cell calculations on this device without requiring sign-in; provide side-by-side comparison.
 - [ ] Add subtle, accessible interaction animations and verify the new workflows.
